@@ -1,13 +1,15 @@
-function App() {
-  
+import React from 'react';
+import Header from './Header';
 
+function App() {
   return (
-    <>
-      <div>
-        hello world
-      </div>
-    </>
-  )
+    <div className="container">
+      <Header />
+      <main>
+        App Page
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
