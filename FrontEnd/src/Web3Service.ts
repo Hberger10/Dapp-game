@@ -4,6 +4,7 @@ import ABI from "./abi.json";
 
 
 
+
 type LoginResult = {
     account: string;
     isAdmin: boolean;
@@ -48,4 +49,61 @@ export async function doLogin(): Promise<LoginResult> {
 export function doLogout(){
     localStorage.removeItem("account");
     localStorage.removeItem("isAdmin");
+}
+export type Dashboard={
+    bid?: string;
+    commission?: string;
+    address?: string;
+}
+export async function upgrade(newContract: string): Promise<string> {
+    const contract = getContract();
+    
+    // E aqui também
+    const web3 = getWeb3();
+    const accounts = await web3.eth.requestAccounts();
+
+    const tx = await contract.methods.upgrade(newContract).send({ from: accounts[0] });
+    return tx.transactionHash;
+}
+export async function setCommission(newCommission: number): Promise<string> {
+    const contract = getContract();
+    
+    
+    const web3 = getWeb3();
+    const accounts = await web3.eth.requestAccounts();
+
+    
+    const tx = await contract.methods.setcomission(newCommission).send({ from: accounts[0] });
+    
+    return tx.transactionHash;
+}
+export async function setBid(newBid: string): Promise<string> {
+    const contract = getContract();
+    
+    // Mesma correção aqui
+    const web3 = getWeb3();
+    const accounts = await web3.eth.requestAccounts();
+
+    const tx = await contract.methods.setBid(newBid).send({ from: accounts[0] });
+    return tx.transactionHash;
+}
+export async function getDashboard(): Promise<Dashboard> {
+    const contract = getContract();
+    
+    // CORREÇÃO 1: Forçamos dizendo "confia, isso é uma string"
+    const address = await contract.methods.getAddress().call() as string;
+
+    if (/^(0x0+)$/.test(address)) {
+        // CORREÇÃO 2: Passamos "10" como string (com aspas)
+        return { 
+            bid: Web3.utils.toWei("0.01", "ether"), 
+            commission: "10", 
+            address 
+        } as Dashboard;
+    }
+
+    const bid = await contract.methods.getBid().call() as string;
+    const commission = await contract.methods.getcomission().call() as string;
+
+    return { bid, commission, address } as Dashboard;
 }

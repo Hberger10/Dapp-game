@@ -32,21 +32,25 @@ function Header() {
         navigate("/");
     }
 
-    // Header.tsx
+    
 return (
-    // Mudei para 'justify-content-between' e adicionei 'py-3' para dar um ar
-    <header className="d-flex flex-wrap justify-content-between py-3 mb-4 border-bottom">
-        
-        <a href="/app" className="d-flex align-items-center mb-3 mb-md-0 link-body-emphasis text-decoration-none">
-             {/* Use text-light se o fundo for escuro, ou tire para padrão */}
+    <header className="bg-dark border-bottom border-secondary">
+      <div className="container-fluid px-4 py-3">
+        <div className="d-flex justify-content-between align-items-center">
+          <a href="/app" className="text-decoration-none">
             <span className="fs-4 text-light">Dapp JoKenPo</span>
-        </a>
-
-        <div className="col-md-3 text-end">
-            <button type="button" className="btn btn-outline-danger me-2" onClick={onLogoutClick}>Logout</button>
+          </a>
+          <button 
+            type="button" 
+            className="btn btn-outline-danger" 
+            onClick={onLogoutClick}
+          >
+            Logout
+          </button>
         </div>
+      </div>
     </header>
-)
+  )
 }
 
 export default Header;
