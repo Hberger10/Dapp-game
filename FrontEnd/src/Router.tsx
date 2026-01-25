@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import { Route, BrowserRouter, Routes, Navigate } from 'react-router-dom';
-import Admin from './admin.tsx';
+import Admin from './Admin.tsx';
 import App from './App';
 import Login from './Login';
 

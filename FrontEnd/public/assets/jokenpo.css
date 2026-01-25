@@ -100,3 +100,14 @@ body {
   color: #fff;
   border-bottom-color: #fff;
 }
+
+.play-button {
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+}
+
+.play-button:hover {
+  background-color: blue;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}

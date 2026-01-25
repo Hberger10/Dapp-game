@@ -36,7 +36,7 @@ contract JoKenPo is IJoKenPo {
         return comissionPercent;
     }
     function setcomission(uint8 newComissionPercent) external {
-        require(msg.sender == owner, "Only the owner can set the comission");
+        require(tx.origin == owner, "Only the owner can set the comission");
         require(player1 == address(0), "Cannot change comission during an active game");
         comissionPercent = newComissionPercent;   
     }

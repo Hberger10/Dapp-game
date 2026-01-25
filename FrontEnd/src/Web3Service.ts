@@ -58,7 +58,7 @@ export type Dashboard={
 export async function upgrade(newContract: string): Promise<string> {
     const contract = getContract();
     
-    // E aqui também
+    
     const web3 = getWeb3();
     const accounts = await web3.eth.requestAccounts();
 
@@ -90,11 +90,11 @@ export async function setBid(newBid: string): Promise<string> {
 export async function getDashboard(): Promise<Dashboard> {
     const contract = getContract();
     
-    // CORREÇÃO 1: Forçamos dizendo "confia, isso é uma string"
+    
     const address = await contract.methods.getAddress().call() as string;
 
     if (/^(0x0+)$/.test(address)) {
-        // CORREÇÃO 2: Passamos "10" como string (com aspas)
+        1
         return { 
             bid: Web3.utils.toWei("0.01", "ether"), 
             commission: "10", 
@@ -106,4 +106,44 @@ export async function getDashboard(): Promise<Dashboard> {
     const commission = await contract.methods.getcomission().call() as string;
 
     return { bid, commission, address } as Dashboard;
+}
+
+export type LeaderBoard = {
+    
+    result?: string;
+};
+
+export enum Choice {
+    NONE,
+    ROCK,
+    PAPER,
+    SCISSORS
+};
+
+export async function play(option: Choice) : Promise<string> {
+    const web3 = getWeb3();
+    const contract = getContract(web3);
+    const bidResponse = await contract.methods.getBid().call();
+    const bid = String(bidResponse);
+    const tx = await contract.methods.play(option).send({value: bid});
+    return tx.transactionHash;
+}
+
+export async function getResult() : Promise<string> {
+    const contract = getContract();
+    return contract.methods.getResult().call();
+    
+}
+
+export async function getLeaderBoard() : Promise<LeaderBoard> {
+    const contract = getContract();
+    const result = await contract.methods.getResult().call();
+    return { result } as LeaderBoard;
+   
+}
+
+export type player={
+    address:string;
+    wins:number;
+
 }
