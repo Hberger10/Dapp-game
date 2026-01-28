@@ -1,5 +1,6 @@
-import Web3 from "web3";
+import Web3, { eth } from "web3";
 import ABI from "./abi.json";
+
 
 
 
@@ -80,7 +81,7 @@ export async function setCommission(newCommission: number): Promise<string> {
 export async function setBid(newBid: string): Promise<string> {
     const contract = getContract();
     
-    // Mesma correção aqui
+    
     const web3 = getWeb3();
     const accounts = await web3.eth.requestAccounts();
 
@@ -125,11 +126,11 @@ export async function play(option: Choice): Promise<string> {
     const contract = getContract(web3);
     const accounts = await web3.eth.requestAccounts();
 
-    // 1. Pegamos o valor da aposta (Convertendo para String)
+    
     const bidResponse = await contract.methods.getBid().call();
     const bid = String(bidResponse);
 
-    // 2. Traduzimos a escolha
+    
     let choiceString = "";
     switch(option) {
         case Choice.ROCK: choiceString = "Rock"; break;
@@ -138,35 +139,35 @@ export async function play(option: Choice): Promise<string> {
         default: throw new Error("Invalid choice selected");
     }
 
-    // 3. Verificamos a vaga do Player 1 (Com TRATAMENTO DE ERRO)
+    
     let isPlayer1Empty = false;
 
     try {
-        // Tenta ler o player1. O 'as string' evita o erro de void!
+       
         const player1Address = await contract.methods.player1().call() as string;
         isPlayer1Empty = /^0x0+$/.test(player1Address);
         console.log("Player 1 Address:", player1Address);
     } catch (err) {
-        // Se falhar (ex: ABI desatualizado), tentamos pelo Status
+        
         console.warn("Erro ao ler player1. Tentando pelo Status...");
         try {
-            const status = await contract.methods.getStatus().call() as string; // <--- AQUI O ERRO QUE VOCÊ VIU
-            // Se o status for vazio ou indicar que ninguém jogou
+            const status = await contract.methods.getStatus().call() as string; 
+            
             if (!status || status === "") {
                 isPlayer1Empty = true;
             } else if (status.includes("Player 1")) {
-                // Se o texto diz que o P1 já jogou, então a vaga P1 NÃO está vazia
+                
                 isPlayer1Empty = false;
             }
         } catch (e) {
-            // Se tudo falhar, assume que é Player 1 (fallback)
+            
             isPlayer1Empty = true; 
         }
     }
 
     console.log(`Vou jogar como: ${isPlayer1Empty ? "Player 1" : "Player 2"}`);
 
-    let tx: any; // 'any' para o TS aceitar o retorno do .send()
+    let tx: any; 
 
     if (isPlayer1Empty) {
         tx = await contract.methods.play1(choiceString).send({ 
@@ -211,4 +212,31 @@ export async function finishGame(): Promise<string> {
     const tx = await contract.methods.win().send({ from: accounts[0] });
     
     return tx.transactionHash;
+}
+
+
+
+export function listenToEvents(callback: Function) {
+    const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
+    
+    if (!wsUrl) {
+        console.error("VITE_WEBSOCKET_URL não encontrada no .env");
+        return () => {}; 
+    }
+
+    const web3Socket = new Web3(wsUrl);
+    const contract = new web3Socket.eth.Contract(ABI, ADAPTER_ADDRESS);
+
+    // Configura o Listener
+    const subscription = contract.events.Played({
+        fromBlock: 'latest'
+    })
+    .on('data', (event: any) => {
+        console.log("🔥 Novo evento recebido:", event.returnValues);
+        callback(event.returnValues);
+    })
+    
+    
+    
+
 }

@@ -4,7 +4,7 @@ async function main() {
   // 1. Coloque aqui o endereço do seu Adapter ATUAL (que está no seu Frontend/.env)
   // Se for testnet, pegue o que você já fez deploy.
   // Se for local e você reiniciou o node, terá que fazer o deploy total de novo.
-  const ADAPTER_ADDRESS = "0xA9A7bEb37458559B2e8415A3AE79879ec26218fA"; 
+  const ADAPTER_ADDRESS = "0x6d9De96078983CFE8623CEde56325dE0877F5d60"; 
 
   console.log("Iniciando Upgrade...");
 

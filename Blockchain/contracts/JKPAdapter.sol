@@ -10,6 +10,8 @@ contract JKPAdapter {
     
     address public immutable owner;
 
+    event Played(address player, string status);
+
     constructor() {
         owner = msg.sender;
     }
@@ -66,11 +68,13 @@ contract JKPAdapter {
    
     
     function play1(string memory Choice_string) external payable upgraded {
-        joKenPo.play1{value: msg.value}(Choice_string);
+        string memory status= joKenPo.play1{value: msg.value}(Choice_string);
+        emit Played(msg.sender, status);
     }
 
     function play2(string memory Choice_string2) external payable upgraded {
-        joKenPo.play2{value: msg.value}(Choice_string2);
+        string memory status=joKenPo.play2{value: msg.value}(Choice_string2);
+        emit Played(msg.sender, status);
     }
 
     function win() external upgraded returns (string memory) {

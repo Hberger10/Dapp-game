@@ -16,9 +16,9 @@ interface IJoKenPo {
     
     function getBalance() external view returns (uint);
 
-    function play1(string memory Choice_string) external payable;
+    function play1(string memory Choice_string) external payable returns (string memory);
     
-    function play2(string memory Choice_string2) external payable;
+    function play2(string memory Choice_string2) external payable returns (string memory);
     
     function win() external returns (string memory);
 }

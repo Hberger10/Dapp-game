@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import "./IJoKenPo.sol";
 
 contract JoKenPo is IJoKenPo { 
-    enum Choice { NONE, Rock, Paper, Scissors } // 0, 1, 2, 3
+    enum Choice { NONE, Rock, Paper, Scissors } 
 
     address public player1;
     address public player2;
@@ -88,12 +88,12 @@ contract JoKenPo is IJoKenPo {
     }
 
     function getBalance() external view returns (uint) {
-        require(msg.sender == tx.origin, "You are not the owner");
+        require(msg.sender == owner || tx.origin == owner, "Restricted");
         return address(this).balance;
     }
 
     
-    function play1(string memory Choice_string) external payable {
+    function play1(string memory Choice_string) external payable returns (string memory) {
         if (player1 == address(0)) {
             player1 = tx.origin;
         }
@@ -117,10 +117,10 @@ contract JoKenPo is IJoKenPo {
         if (compare(Choice_string, "Scissors")) {
             choosePlayer1 = Choice.Scissors;
         }
-        status = "Player 1 has already chosen";
+        return status = "Player 1 has already chosen";
     }
 
-    function play2(string memory Choice_string2) external payable {
+    function play2(string memory Choice_string2) external payable returns (string memory) {
         if (player2 == address(0)) {
             player2 = tx.origin;
         }
@@ -147,7 +147,7 @@ contract JoKenPo is IJoKenPo {
             choosePlayer2 = Choice.Scissors;
         }
 
-        status = "Both players have played!";
+        return status = "Both players have played!";
     }
 
     
@@ -159,7 +159,7 @@ contract JoKenPo is IJoKenPo {
 
         
 
-        // LÓGICA DE EMPATE (ACUMULAR)
+        
         if (choosePlayer1 == choosePlayer2) {
             status = "Tie! Prize rolls over. Play again!";
             choosePlayer1 = Choice.NONE;
