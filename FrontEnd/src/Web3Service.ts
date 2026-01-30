@@ -1,6 +1,5 @@
-import Web3, { eth } from "web3";
+import Web3 from "web3";
 import ABI from "./abi.json";
-
 
 
 
@@ -143,7 +142,7 @@ export async function play(option: Choice): Promise<string> {
     let isPlayer1Empty = false;
 
     try {
-       
+        
         const player1Address = await contract.methods.player1().call() as string;
         isPlayer1Empty = /^0x0+$/.test(player1Address);
         console.log("Player 1 Address:", player1Address);
@@ -151,7 +150,7 @@ export async function play(option: Choice): Promise<string> {
         
         console.warn("Erro ao ler player1. Tentando pelo Status...");
         try {
-            const status = await contract.methods.getStatus().call() as string; 
+            const status = await contract.methods.getStatus().call() as string; // <--- AQUI O ERRO QUE VOCÊ VIU
             
             if (!status || status === "") {
                 isPlayer1Empty = true;
@@ -213,30 +212,27 @@ export async function finishGame(): Promise<string> {
     
     return tx.transactionHash;
 }
+export function listentoEvent(callback: (event: any) => void) {
+  const provider = new Web3.providers.WebsocketProvider(
+    `${import.meta.env.VITE_WEBSOCKET_SERVER}`
+  );
+  const web3 = new Web3(provider);
 
+  const contract = new web3.eth.Contract(ABI, ADAPTER_ADDRESS);
 
+  const subscription = contract.events.Played({
+    fromBlock: 'latest'
+  });
 
-export function listenToEvents(callback: Function) {
-    const wsUrl = import.meta.env.VITE_WEBSOCKET_URL;
-    
-    if (!wsUrl) {
-        console.error("VITE_WEBSOCKET_URL não encontrada no .env");
-        return () => {}; 
-    }
+  subscription
+  .on('data', (event: any) => {
+    callback(event);
+  })
+  .on('error', (error: Error) => {
+    console.error('Error listening to events:', error);
+  });
 
-    const web3Socket = new Web3(wsUrl);
-    const contract = new web3Socket.eth.Contract(ABI, ADAPTER_ADDRESS);
-
-    // Configura o Listener
-    const subscription = contract.events.Played({
-        fromBlock: 'latest'
-    })
-    .on('data', (event: any) => {
-        console.log("🔥 Novo evento recebido:", event.returnValues);
-        callback(event.returnValues);
-    })
-    
-    
-    
-
+  return () => {
+    subscription.unsubscribe();
+  };
 }

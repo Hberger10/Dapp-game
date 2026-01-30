@@ -1,12 +1,12 @@
 import Header from './Header';
 import { useState, useEffect } from 'react';
-// 👇 1. Adicionei 'listenToEvents' na importação
-import { type LeaderBoard, Choice, play, finishGame, getResult, listenToEvents } from './Web3Service';
+import { type LeaderBoard, Choice, play, finishGame, getResult, listentoEvent } from './Web3Service';
 import '../public/assets/jokenpo.css'; 
 
 function App() {
   const [message, setMessage] = useState("Choose your move to play!");
   const [leaderBoard, setLeaderBoard] = useState<LeaderBoard>();
+
   
   async function refreshStatus() {
     try {
@@ -18,21 +18,22 @@ function App() {
     }
   }
 
-  // 👇 2. O useEffect atualizado com a correção do VOID
+  
   useEffect(() => {
-    // Carrega o status inicial
     refreshStatus();
-
-    // Liga o WebSocket e recebe a função de limpeza (cleanup)
-    const cleanup = listenToEvents((data: any) => {
-        console.log("🔔 Evento recebido no Front:", data);
-        // Assim que chegar o evento, atualiza a tela sozinho!
-        refreshStatus(); 
+    
+    // 🔥 AQUI ESTÁ A INTEGRAÇÃO DO listenEvent 🔥
+    listentoEvent((event) => {
+      console.log('🎮 Evento Played recebido:', event);
+      console.log('Jogador:', event.returnValues.address);
+      console.log('Jogada:', event.returnValues.string);
+      
+      // Atualiza automaticamente o status quando alguém jogar
+      refreshStatus();
+      
+      // Pode adicionar notificações, animações, etc
+      setMessage(`Nova jogada detectada! Atualizando...`);
     });
-
-    // Quando sair da tela, o React executa essa função para desligar o WebSocket
-    // Como agora 'cleanup' é uma função válida, o erro de void some!
-    return cleanup;
   }, []);
 
   
@@ -42,8 +43,7 @@ function App() {
     
     try {
        await play(option);
-       // O refreshStatus aqui continua útil para dar feedback imediato para quem clicou,
-       // mas o evento garante que o OUTRO jogador também veja a atualização.
+       
        await refreshStatus(); 
     } catch (err: any) {
        setMessage(err.message || "Error");
@@ -54,6 +54,7 @@ function App() {
   async function onResult() {
     setMessage("Resolving game (calculating winner)...");
     try {
+        
         await finishGame();
         setMessage("Game finished! Checking winner...");
         await refreshStatus(); 
@@ -73,7 +74,6 @@ function App() {
             <p className="lead text-muted">Make your bid in Blockchain</p>
         </div>
 
-        {/* --- CARD DE STATUS --- */}
         <div className="card card-body border-0 shadow mb-5 text-center">
           <h5 className="mb-3 text-primary">Current Status:</h5>
 
@@ -89,7 +89,6 @@ function App() {
             }
           </h5>
 
-          {/* 👇 BOTÃO DE FINALIZAR 👇 */}
           {message && message.includes("Both players have played") && (
                 <div className="mt-3">
                     <button 
@@ -104,10 +103,16 @@ function App() {
 
 
         <div className="row justify-content-center g-4">
+            
             {/* ROCK */}
             <div className="col-12 col-md-4">
                 <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.ROCK)}>
-                    <img src="/assets/rock.png" alt="Pedra" className="img-fluid mb-3" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+                    <img 
+                        src="/assets/rock.png" 
+                        alt="Pedra" 
+                        className="img-fluid mb-3" 
+                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                    />
                     <h3 className="h5 mb-3">Rock</h3>
                     <button className="btn btn-warning w-100 mt-auto">Play</button>
                 </div>
@@ -116,7 +121,12 @@ function App() {
             {/* PAPER */}
             <div className="col-12 col-md-4">
                 <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.PAPER)}>
-                    <img src="/assets/paper.png" alt="Papel" className="img-fluid mb-3" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+                    <img 
+                        src="/assets/paper.png" 
+                        alt="Papel" 
+                        className="img-fluid mb-3"
+                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                    />
                     <h3 className="h5 mb-3">Paper</h3>
                     <button className="btn btn-info w-100 mt-auto">Play</button>
                 </div>
@@ -125,11 +135,17 @@ function App() {
             {/* SCISSORS */}
             <div className="col-12 col-md-4">
                 <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.SCISSORS)}>
-                    <img src="/assets/scissors.png" alt="Tesoura" className="img-fluid mb-3" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+                    <img 
+                        src="/assets/scissors.png" 
+                        alt="Tesoura" 
+                        className="img-fluid mb-3"
+                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                    />
                     <h3 className="h5 mb-3">Scissors</h3>
                     <button className="btn btn-danger w-100 mt-auto">Play</button>
                 </div>
             </div>
+
         </div>
         
         <div className="text-center mt-5">
