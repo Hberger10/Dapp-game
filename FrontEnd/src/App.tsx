@@ -22,18 +22,19 @@ function App() {
   useEffect(() => {
     refreshStatus();
     
-    // 🔥 AQUI ESTÁ A INTEGRAÇÃO DO listenEvent 🔥
-    listentoEvent((event) => {
+    const unsubscribe = listentoEvent((event) => {
       console.log('🎮 Evento Played recebido:', event);
-      console.log('Jogador:', event.returnValues.address);
-      console.log('Jogada:', event.returnValues.string);
+      console.log('Jogador:', event.returnValues?.player);
+      console.log('Jogada:', event.returnValues?.choice);
       
-      // Atualiza automaticamente o status quando alguém jogar
       refreshStatus();
       
-      // Pode adicionar notificações, animações, etc
       setMessage(`Nova jogada detectada! Atualizando...`);
     });
+
+    return () => {
+      unsubscribe?.();
+    };
   }, []);
 
   
