@@ -215,24 +215,36 @@ export async function finishGame(): Promise<string> {
 
 // Web3Service.ts
 
+// Web3Service.ts
+
 export async function doListen(onEvent: () => void) {
+    // 1. Instancia a conexão WebSocket (igual ao seu código original para garantir conexão)
     const web3 = new Web3(import.meta.env.VITE_WEBSOCKET_SERVER);
+    // @ts-ignore (Caso o TS reclame do ABI, pode ignorar ou usar aspas)
     const contract = new web3.eth.Contract(ABI, import.meta.env.VITE_ADAPTER_ADDRESS);
 
-    console.log("Iniciando monitoramento...");
+    console.log("📡 Iniciando monitoramento WebSocket...");
 
-    // REMOVA o objeto { fromBlock: "latest" }
-    // Deixe vazio ou passe apenas {} para ele focar em novos eventos
+    // 2. CRUCIAL: Sem passar { filter: ... } nem { fromBlock: ... }
+    // Isso garante que ouvimos "fofocas" de QUALQUER jogador
     const subscription = contract.events.Played(); 
 
+    // 3. Configura o Listener com logs de debug
     subscription.on("data", (event: any) => {
-        console.log("Nova jogada detectada!");
+        console.log("🔥 Evento recebido da Blockchain!");
+        
+        // Esses logs vão te provar se o Owner ou o Player 2 disparou o evento
+        if (event.returnValues) {
+            console.log(" > Jogador:", event.returnValues.player);
+            console.log(" > Status:", event.returnValues.status);
+        }
+
+        // Avisa o React para atualizar a tela
         onEvent(); 
     });
 
     subscription.on("error", (error: any) => {
-        // Esse erro é comum em conexões instáveis, não precisa travar o app
-        console.warn("Aviso WebSocket:", error.message || error);
+        console.warn("⚠️ Aviso WebSocket:", error.message || error);
     });
 
     return subscription;
