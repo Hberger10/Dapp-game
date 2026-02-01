@@ -1,6 +1,6 @@
 import Header from './Header';
 import { useState, useEffect } from 'react';
-import { type LeaderBoard, Choice, play, finishGame, getResult, listentoEvent } from './Web3Service';
+import { type LeaderBoard, Choice, play, finishGame, getResult,doListen } from './Web3Service';
 import '../public/assets/jokenpo.css'; 
 
 function App() {
@@ -20,22 +20,30 @@ function App() {
 
   
   useEffect(() => {
-    refreshStatus();
-    
-    const unsubscribe = listentoEvent((event) => {
-      console.log('🎮 Evento Played recebido:', event);
-      console.log('Jogador:', event.returnValues?.player);
-      console.log('Jogada:', event.returnValues?.choice);
-      
-      refreshStatus();
-      
-      setMessage(`Nova jogada detectada! Atualizando...`);
-    });
+  refreshStatus();
 
-    return () => {
-      unsubscribe?.();
-    };
-  }, []);
+  let subscription: any;
+
+  const startMonitoring = async () => {
+    subscription = await doListen(() => {
+      console.log("Evento recebido! Aguardando atualização...");
+      
+      // Adiciona um atraso de 2 segundos antes de ler o status
+      // Isso dá tempo pro Blockchain "assentar" a informação
+      setTimeout(() => {
+        refreshStatus();
+      }, 2000); 
+    });
+  };
+
+  startMonitoring();
+
+  return () => {
+    if (subscription && subscription.unsubscribe) {
+      subscription.unsubscribe();
+    }
+  };
+}, []);
 
   
   async function onPlay(option: Choice) {
@@ -75,6 +83,7 @@ function App() {
             <p className="lead text-muted">Make your bid in Blockchain</p>
         </div>
 
+        {/* --- CARD DE STATUS --- */}
         <div className="card card-body border-0 shadow mb-5 text-center">
           <h5 className="mb-3 text-primary">Current Status:</h5>
 
@@ -90,6 +99,7 @@ function App() {
             }
           </h5>
 
+          {/* 👇 AQUI ESTÁ O QUE FALTAVA: O BOTÃO DE FINALIZAR 👇 */}
           {message && message.includes("Both players have played") && (
                 <div className="mt-3">
                     <button 
@@ -100,6 +110,7 @@ function App() {
                     </button>
                 </div>
           )}
+          {/* -------------------------------------------------- */}
         </div>
 
 
@@ -149,6 +160,7 @@ function App() {
 
         </div>
         
+        {/* Rodapé extra com mensagem (opcional, pode remover se quiser duplicado) */}
         <div className="text-center mt-5">
              <div className="alert alert-light d-inline-block px-5 border">
                 <small className="text-muted">Status: {message}</small>

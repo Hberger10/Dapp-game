@@ -80,7 +80,7 @@ export async function setCommission(newCommission: number): Promise<string> {
 export async function setBid(newBid: string): Promise<string> {
     const contract = getContract();
     
-    
+    // Mesma correção aqui
     const web3 = getWeb3();
     const accounts = await web3.eth.requestAccounts();
 
@@ -94,7 +94,7 @@ export async function getDashboard(): Promise<Dashboard> {
     const address = await contract.methods.getAddress().call() as string;
 
     if (/^(0x0+)$/.test(address)) {
-        1
+        
         return { 
             bid: Web3.utils.toWei("0.01", "ether"), 
             commission: "10", 
@@ -125,11 +125,11 @@ export async function play(option: Choice): Promise<string> {
     const contract = getContract(web3);
     const accounts = await web3.eth.requestAccounts();
 
-    
+    // 1. Pegamos o valor da aposta (Convertendo para String)
     const bidResponse = await contract.methods.getBid().call();
     const bid = String(bidResponse);
 
-    
+    // 2. Traduzimos a escolha
     let choiceString = "";
     switch(option) {
         case Choice.ROCK: choiceString = "Rock"; break;
@@ -138,31 +138,46 @@ export async function play(option: Choice): Promise<string> {
         default: throw new Error("Invalid choice selected");
     }
 
-    const txParams = { 
-        from: accounts[0], 
-        value: bid, 
-    };
-
-    let tx: any; 
-    let canPlay1 = false;
+    // 3. Verificamos a vaga do Player 1 (Com TRATAMENTO DE ERRO)
+    let isPlayer1Empty = false;
 
     try {
-        await contract.methods.play1(choiceString).estimateGas(txParams);
-        canPlay1 = true;
+        // Tenta ler o player1. O 'as string' evita o erro de void!
+        const player1Address = await contract.methods.player1().call() as string;
+        isPlayer1Empty = /^0x0+$/.test(player1Address);
+        console.log("Player 1 Address:", player1Address);
     } catch (err) {
-        canPlay1 = false;
+        // Se falhar (ex: ABI desatualizado), tentamos pelo Status
+        console.warn("Erro ao ler player1. Tentando pelo Status...");
+        try {
+            const status = await contract.methods.getStatus().call() as string; // <--- AQUI O ERRO QUE VOCÊ VIU
+            // Se o status for vazio ou indicar que ninguém jogou
+            if (!status || status === "") {
+                isPlayer1Empty = true;
+            } else if (status.includes("Player 1")) {
+                // Se o texto diz que o P1 já jogou, então a vaga P1 NÃO está vazia
+                isPlayer1Empty = false;
+            }
+        } catch (e) {
+            // Se tudo falhar, assume que é Player 1 (fallback)
+            isPlayer1Empty = true; 
+        }
     }
 
-    if (canPlay1) {
-        tx = await contract.methods.play1(choiceString).send(txParams);
+    console.log(`Vou jogar como: ${isPlayer1Empty ? "Player 1" : "Player 2"}`);
+
+    let tx: any; // 'any' para o TS aceitar o retorno do .send()
+
+    if (isPlayer1Empty) {
+        tx = await contract.methods.play1(choiceString).send({ 
+            from: accounts[0], 
+            value: bid 
+        });
     } else {
-        try {
-            await contract.methods.play2(choiceString).estimateGas(txParams);
-            tx = await contract.methods.play2(choiceString).send(txParams);
-        } catch (err: any) {
-            const reason = err?.message || "Unable to play as Player 1 or Player 2.";
-            throw new Error(reason);
-        }
+        tx = await contract.methods.play2(choiceString).send({ 
+            from: accounts[0], 
+            value: bid 
+        });
     }
 
     return tx.transactionHash;
@@ -197,46 +212,28 @@ export async function finishGame(): Promise<string> {
     
     return tx.transactionHash;
 }
-type PlayedEvent = {
-  returnValues?: {
-    player?: string;
-    choice?: string;
-  };
-};
 
-type PlayedEventSubscription = {
-  on: (eventName: "data" | "error", handler: (event: any) => void) => PlayedEventSubscription;
-  unsubscribe: () => void;
-};
+// Web3Service.ts
 
-export function listentoEvent(callback: (event: PlayedEvent) => void): () => void {
-  const websocketUrl =  import.meta.env.VITE_WEBSOCKET_URL;
-  if (!websocketUrl) {
-    console.warn("WebSocket server not configured for event listening.");
-    return () => undefined;
-  }
+export async function doListen(onEvent: () => void) {
+    const web3 = new Web3(import.meta.env.VITE_WEBSOCKET_SERVER);
+    const contract = new web3.eth.Contract(ABI, import.meta.env.VITE_ADAPTER_ADDRESS);
 
-  const provider = new Web3.providers.WebsocketProvider(websocketUrl);
-  const web3 = new Web3(provider);
+    console.log("Iniciando monitoramento...");
 
-  const contract = new web3.eth.Contract(ABI, ADAPTER_ADDRESS);
+    // REMOVA o objeto { fromBlock: "latest" }
+    // Deixe vazio ou passe apenas {} para ele focar em novos eventos
+    const subscription = contract.events.Played(); 
 
-  const subscription = contract.events.Played({
-    fromBlock: "latest",
-  }) as unknown as PlayedEventSubscription;
-
-  subscription
-    .on("data", (event: PlayedEvent) => {
-      callback(event);
-    })
-    .on("error", (error: Error) => {
-      console.error("Error listening to events:", error);
+    subscription.on("data", (event: any) => {
+        console.log("Nova jogada detectada!");
+        onEvent(); 
     });
 
-  return () => {
-    subscription.unsubscribe();
-    if (typeof (provider as { disconnect?: (code?: number, reason?: string) => void }).disconnect === "function") {
-      (provider as { disconnect: (code?: number, reason?: string) => void }).disconnect(1000, "Listener closed");
-    }
-  };
+    subscription.on("error", (error: any) => {
+        // Esse erro é comum em conexões instáveis, não precisa travar o app
+        console.warn("Aviso WebSocket:", error.message || error);
+    });
+
+    return subscription;
 }

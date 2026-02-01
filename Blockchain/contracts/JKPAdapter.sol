@@ -78,6 +78,12 @@ contract JKPAdapter {
     }
 
     function win() external upgraded returns (string memory) {
-        return joKenPo.win();
+        
+        string memory result = joKenPo.win();
+        
+        
+        emit Played(address(0), result); 
+        
+        return result;
     }
 }

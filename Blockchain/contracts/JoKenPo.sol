@@ -70,6 +70,8 @@ contract JoKenPo is IJoKenPo {
         player1 = address(0);
         player2 = address(0);
 
+        status = "";
+
         
         uint totalBalance = address(this).balance;  
         uint ownerFee = (totalBalance * comissionPercent) / 100; 
