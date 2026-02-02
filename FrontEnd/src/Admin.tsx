@@ -2,6 +2,7 @@ import { useState,useEffect } from 'react';
 import Header from './Header';
 import type { Dashboard } from './Web3Service';
 import { getDashboard, upgrade, setBid, setCommission } from './Web3Service';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -9,8 +10,16 @@ import { getDashboard, upgrade, setBid, setCommission } from './Web3Service';
 function Admin() {
     const [message, setMessage] = useState("");
     const [dashboard, setDashboard] = useState<Dashboard>();
+    const navigate = useNavigate();
+
+
 
     useEffect(() => {
+        const isAdmin = localStorage.getItem("isAdmin") === "true";
+        if (!isAdmin) {
+            navigate("/app");
+            return;
+        }
         getDashboard()
             .then(dashboard => setDashboard(dashboard))
             .catch(err => setMessage(err.message));
@@ -50,7 +59,7 @@ function Admin() {
             <Header />
             <main>
                 <div className="py-5 text-center">
-                    <img className="d-block mx-auto mb-4" src="/logo512.png" alt="JoKenPo" width="72" />
+                    <img className="d-block mx-auto mb-4" src="/public/favicon.png" alt="JoKenPo" width="92" />
                     <h2>Administrative Panel</h2>
                     <p className="lead">Change the players' bid, your commission and upgrade the contract.</p>
                     <p className="lead text-danger">{message}</p>

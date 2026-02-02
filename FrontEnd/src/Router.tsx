@@ -3,6 +3,7 @@ import { Route, BrowserRouter, Routes, Navigate } from 'react-router-dom';
 import Admin from './Admin.tsx';
 import App from './App';
 import Login from './Login';
+import JoKenPo from './JoKenPo.tsx';
 
 function Router() {
 
@@ -27,6 +28,11 @@ function Router() {
                 <Route path='/app' element={
                     <PrivateRoute>
                         <App />
+                    </PrivateRoute>
+                } />
+                <Route path='/jokenpo' element={
+                    <PrivateRoute>
+                        <JoKenPo />
                     </PrivateRoute>
                 } />
             </Routes>
