@@ -125,7 +125,7 @@ export async function play(option: Choice): Promise<string> {
     const contract = getContract(web3);
     const accounts = await web3.eth.requestAccounts();
 
-    // 1. Pegamos o valor da aposta (Convertendo para String)
+    // 1. Pegamos o valor da aposta
     const bidResponse = await contract.methods.getBid().call();
     const bid = String(bidResponse);
 
@@ -138,35 +138,29 @@ export async function play(option: Choice): Promise<string> {
         default: throw new Error("Invalid choice selected");
     }
 
-    // 3. Verificamos a vaga do Player 1 (Com TRATAMENTO DE ERRO)
-    let isPlayer1Empty = false;
+    // 3. Verificação via STATUS (Pois o Adapter não expõe player1)
+    let isPlayer1Empty = true; 
 
     try {
-        // Tenta ler o player1. O 'as string' evita o erro de void!
-        const player1Address = await contract.methods.player1().call() as string;
-        isPlayer1Empty = /^0x0+$/.test(player1Address);
-        console.log("Player 1 Address:", player1Address);
-    } catch (err) {
-        // Se falhar (ex: ABI desatualizado), tentamos pelo Status
-        console.warn("Erro ao ler player1. Tentando pelo Status...");
-        try {
-            const status = await contract.methods.getStatus().call() as string; // <--- AQUI O ERRO QUE VOCÊ VIU
-            // Se o status for vazio ou indicar que ninguém jogou
-            if (!status || status === "") {
-                isPlayer1Empty = true;
-            } else if (status.includes("Player 1")) {
-                // Se o texto diz que o P1 já jogou, então a vaga P1 NÃO está vazia
-                isPlayer1Empty = false;
-            }
-        } catch (e) {
-            // Se tudo falhar, assume que é Player 1 (fallback)
-            isPlayer1Empty = true; 
+        // O Adapter tem a função getStatus
+        const status = await contract.methods.getStatus().call();
+        const statusStr = String(status);
+        
+        console.log("Status vindo do Adapter:", statusStr);
+
+        // Se o status diz que P1 já jogou ou está esperando, então NÃO sou o P1
+        if (statusStr.includes("Player 1") || statusStr.includes("Waiting")) {
+            isPlayer1Empty = false;
         }
+
+    } catch (err) {
+        console.warn("Erro ao ler status. Assumindo Player 1.", err);
+        isPlayer1Empty = true;
     }
 
     console.log(`Vou jogar como: ${isPlayer1Empty ? "Player 1" : "Player 2"}`);
 
-    let tx: any; // 'any' para o TS aceitar o retorno do .send()
+    let tx: any;
 
     if (isPlayer1Empty) {
         tx = await contract.methods.play1(choiceString).send({ 

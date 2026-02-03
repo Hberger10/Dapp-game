@@ -42,7 +42,7 @@ function Header() {
                             className="btn btn-outline-danger btn-sm" 
                             onClick={onLogoutClick}
                         >
-                            Sair
+                            Logout
                         </button>
                     </div>
                 </div>
