@@ -60,7 +60,8 @@
 .btn-secondary:focus {
   color: #333;
   text-shadow: none;
-  /* Prevent inheritance from `body` */
+  /* Prevent inheritance from `body`
+   */
 }
 
 
@@ -105,9 +106,14 @@ body {
   cursor: pointer;
   font-size: 1.5rem;
   padding: 1rem 2rem;
+  transition: all 0.3s ease;
 }
 
 .play-button:hover {
-  background-color: blue;
+  transform: translateY(-5px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+html, body {
+  height: 100%;
+  overflow-y: auto;
 }

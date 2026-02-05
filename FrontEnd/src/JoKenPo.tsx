@@ -28,8 +28,7 @@ function JoKenPo() {
     subscription = await doListen(() => {
       console.log("Evento recebido! Aguardando atualização...");
       
-      // Adiciona um atraso de 2 segundos antes de ler o status
-      // Isso dá tempo pro Blockchain "assentar" a informação
+     
       setTimeout(() => {
         refreshStatus();
       }, 2000); 
@@ -76,7 +75,8 @@ function JoKenPo() {
     <div className="min-vh-100 d-flex flex-column bg-light">
       <Header />
       
-      <main className="container flex-grow-1 d-flex flex-column justify-content-center py-4">
+      <main className="container flex-grow-1 d-flex flex-column justify-content-start py-4 pb-5">
+
         
         <div className="text-center mb-5 text-dark">
             <h1 className="display-4 fw-bold text-uppercase">Jo-Ken-Po</h1>
@@ -94,7 +94,7 @@ function JoKenPo() {
           <h5 className="mb-3 text-primary">
             {
               leaderBoard && leaderBoard.result?.indexOf("win") !== -1
-                ? "Game Over! Play again:"
+                ? "Play again:"
                 : "Choose your move:"
             }
           </h5>
@@ -114,51 +114,63 @@ function JoKenPo() {
         </div>
 
 
-        <div className="row justify-content-center g-4">
-            
-            {/* ROCK */}
-            <div className="col-12 col-md-4">
-                <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.ROCK)}>
-                    <img 
-                        src="/assets/rock.png" 
-                        alt="Pedra" 
-                        className="img-fluid mb-3" 
-                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
-                    />
-                    <h3 className="h5 mb-3">Rock</h3>
-                    <button className="btn btn-warning w-100 mt-auto">Play</button>
-                </div>
-            </div>
+        <div className="row justify-content-start g-4">
+    
+    {/* ROCK */}
+    <div className="col-12 col-md-4">
+        <div 
+            className="card h-100 shadow-sm border-0 d-flex flex-column align-items-center p-4 pb-4 play-button" 
+            style={{ cursor: 'pointer', overflow: 'visible' }} 
+            onClick={() => onPlay(Choice.ROCK)}
+        >
+            <img 
+                src="/assets/rock.png" 
+                alt="Pedra" 
+                className="img-fluid mb-3" 
+                style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+            />
+            <h3 className="h5 mb-3">Rock</h3>
+            <button className="btn btn-warning w-100">Play</button>
+        </div>
+    </div>
 
             {/* PAPER */}
             <div className="col-12 col-md-4">
-                <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.PAPER)}>
-                    <img 
-                        src="/assets/paper.png" 
-                        alt="Papel" 
-                        className="img-fluid mb-3"
-                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
-                    />
-                    <h3 className="h5 mb-3">Paper</h3>
-                    <button className="btn btn-info w-100 mt-auto">Play</button>
-                </div>
-            </div>
+        <div 
+            className="card h-100 shadow-sm border-0 d-flex flex-column align-items-center p-4 pb-4 play-button" 
+            style={{ cursor: 'pointer', overflow: 'visible' }} 
+            onClick={() => onPlay(Choice.PAPER)}
+        >
+            <img 
+                src="/assets/paper.png" 
+                alt="Papel" 
+                className="img-fluid mb-3"
+                style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+            />
+            <h3 className="h5 mb-3">Paper</h3>
+            <button className="btn btn-info w-100">Play</button>
+        </div>
+    </div>
 
             {/* SCISSORS */}
             <div className="col-12 col-md-4">
-                <div className="card h-100 shadow-sm border-0 align-items-center p-4 play-button" style={{ cursor: 'pointer' }} onClick={() => onPlay(Choice.SCISSORS)}>
-                    <img 
-                        src="/assets/scissors.png" 
-                        alt="Tesoura" 
-                        className="img-fluid mb-3"
-                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
-                    />
-                    <h3 className="h5 mb-3">Scissors</h3>
-                    <button className="btn btn-danger w-100 mt-auto">Play</button>
-                </div>
-            </div>
-
+        <div 
+            className="card h-100 shadow-sm border-0 d-flex flex-column align-items-center p-4 pb-4 play-button" 
+            style={{ cursor: 'pointer', overflow: 'visible' }} 
+            onClick={() => onPlay(Choice.SCISSORS)}
+        >
+            <img 
+                src="/assets/scissors.png" 
+                alt="Tesoura" 
+                className="img-fluid mb-3"
+                style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+            />
+            <h3 className="h5 mb-3">Scissors</h3>
+            <button className="btn btn-danger w-100">Play</button>
         </div>
+    </div>
+
+</div>
         
         
         <div className="text-center mt-5">

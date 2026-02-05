@@ -15,11 +15,11 @@ function Header() {
     }
 
     return (
-        <header className="bg-dark border-bottom border-secondary">
+        <header className="bg-dark border-bottom border-secondary sticky-top">
             <div className="container-fluid px-4 py-3">
                 <div className="d-flex justify-content-between align-items-center">
                     
-                    {/* 1. Título clicável que leva para o MENU (Hub) */}
+                    
                     <div 
                         className="d-flex align-items-center text-decoration-none" 
                         style={{ cursor: "pointer" }}
@@ -30,13 +30,13 @@ function Header() {
 
                     <div className="d-flex align-items-center gap-3">
                         {/* 2. Mostra carteira resumida (Visual pro) */}
-                        <span className="text-muted small d-none d-md-block">
+                        <span className="text-primary small d-none d-md-block">
                             {localStorage.getItem("account") 
                                 ? `${localStorage.getItem("account")?.substring(0,6)}...${localStorage.getItem("account")?.substring(38)}` 
                                 : ""}
                         </span>
 
-                        {/* 3. Botão Logout */}
+                        
                         <button 
                             type="button" 
                             className="btn btn-outline-danger btn-sm" 

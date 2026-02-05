@@ -70,7 +70,7 @@ contract JoKenPo is IJoKenPo {
         player1 = address(0);
         player2 = address(0);
 
-        status = "";
+        // try without status = "";
 
         
         uint totalBalance = address(this).balance;  
